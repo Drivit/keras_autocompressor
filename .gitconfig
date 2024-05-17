@@ -1,0 +1,10 @@
+[safe]
+	directory = /mnt/ssd_2/Academico/Doctorado/PhD_Thesis
+	directory = /mnt/ssd_2/Hydra/gpsn_v2
+	directory = /mnt/ssd_2/Hydra/FacerecogV2
+	directory = /mnt/ssd_2/Documentos/CV/JDCC-Resume
+[user]
+	name = Drivit
+	email = drivit_halo@hotmail.com
+[credential]
+	helper = "!f() { /root/.vscode-server/bin/dc96b837cf6bb4af9cd736aa3af08cf8279f7685-legacy/node /tmp/vscode-remote-containers-a6d5658a-4ebb-471c-9a3c-80008b58dbdc.js git-credential-helper $*; }; f"
