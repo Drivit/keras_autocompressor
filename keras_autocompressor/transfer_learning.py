@@ -18,7 +18,7 @@ def copy_pretrained_translator(
         translator_file = 'efficientnetb5_skip_from_{}_to_{}_5ep_lr0.001.npy'
 
     # Load translator weights
-    module_path = Path(__file__)
+    module_path = Path(__file__).parent
     translators_path = module_path/'translators'
     translator_checkpoint = translators_path/translator_file.format(*connection)
     translator_weights = np.load(str(translator_checkpoint),allow_pickle=True)

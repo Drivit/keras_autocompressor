@@ -5,6 +5,102 @@ from .pruning import create_submodel
 from .metrics import AccuracyCompression
 from .transfer_learning import copy_pretrained_translator
 
+class HyperAutoCompressor(kt.HyperModel):
+
+    def __init__(
+            self, 
+            max_parmeters: int, 
+            num_classes:int, 
+            tau=0.8, 
+            name=None, 
+            tunable=True
+        ):
+        super().__init__(name, tunable)
+
+        # Save the max_parameters as a class attribute
+        self._max_parameters = max_parmeters
+        
+        # Save tau as a class attribute
+        self._tau = tau
+
+        # Set the model architecture type
+        self._architecture_type = None
+        self._backbone_func = None
+        self._translators = None
+        self._model_input_shape = None
+
+        # Save the number of classes for this classification problem
+        self._num_classes = num_classes
+
+
+    def build(self, hp: kt.HyperParameters):
+        '''
+        This method will be called for each hyperparameters search trail. 
+        Building a new model with different hyperparameters according to the
+        search space.
+        '''
+        # Select the back-bone for the model
+        translator = hp.Choice('translator', self._translators)
+        translator = tuple(
+            int(elem) for elem in translator.split(',')
+        )
+
+        # Create the base architecture
+        base_model = create_submodel(
+            base_model = self._backbone_func(
+                input_shape=self._model_input_shape, 
+                include_top=False), 
+            connection = translator, 
+            architecture_type = self._architecture_type
+        )
+        
+        # Copy the pre-trained weights to the base model
+        base_model = copy_pretrained_translator(
+            base_model = base_model,
+            connection = translator,
+            architecture_type = self._architecture_type,
+        )
+
+        # Freeze the base model
+        base_model.trainable = False
+
+        # Create the new top for the network
+        x = base_model.output
+        x = tf.keras.layers.GlobalAveragePooling2D(
+            name='newtop_gap')(x)
+        x = tf.keras.layers.Dense(
+            hp.Int('top_fc1_units', 4, 32, step=8, default=4), name='top_fc1')(x)
+        x = tf.keras.layers.Dense(
+            self._num_classes, name='classifier', activation='softmax')(x)
+
+        model = tf.keras.Model(
+            inputs=base_model.inputs, 
+            outputs=x, 
+            name='autosearch'
+        )
+
+        # Calculate the rate compression for the proposed metric
+        actual_params = model.count_params()
+        params_rate = actual_params / self._max_parameters
+        compression_rate = 1 - params_rate
+
+        # Create the custom metric for this model
+        accuracy_compression_metric = AccuracyCompression(
+            name='acc_comp', 
+            compression_rate=compression_rate, 
+            tau=self._tau
+        )
+        
+        # Compile the model
+        model.compile(
+            optimizer=tf.keras.optimizers.Adam(
+                hp.Float('lr', 1E-5, 1E-2, sampling='log')), 
+            loss=tf.keras.losses.CategoricalCrossentropy(),
+            metrics=['accuracy', accuracy_compression_metric])
+
+        return model
+    
+
 class HyperAutoCompressMobileNet(kt.HyperModel):
     '''
     HyperMobilenet implementation.
@@ -40,6 +136,7 @@ class HyperAutoCompressMobileNet(kt.HyperModel):
     def __init__(
             self, 
             max_parmeters: int, 
+            num_classes:int, 
             tau=0.8, 
             name=None, 
             tunable=True
@@ -54,6 +151,9 @@ class HyperAutoCompressMobileNet(kt.HyperModel):
 
         # Set the model architecture type
         self.__architecture_type = 'mobilenetv1'
+
+        # Save the number of classes for this classification problem
+        self.__num_classes = num_classes
 
     def build(self, hp: kt.HyperParameters):
         '''
@@ -93,7 +193,7 @@ class HyperAutoCompressMobileNet(kt.HyperModel):
         x = tf.keras.layers.Dense(
             hp.Int('fc_units', 4, 32, step=8, default=4), name='newtop_fc1')(x)
         x = tf.keras.layers.Dense(
-            hp.get('n_classes'), name='classifier', activation='softmax')(x)
+            self.__num_classes, name='classifier', activation='softmax')(x)
 
         model = tf.keras.Model(
             inputs=base_model.inputs, 
@@ -129,7 +229,7 @@ class HyperAutoCompressMobileNetV2(kt.HyperModel):
     '''
 
     # Set the the pre-trained submodels connections, in format 'A,B'
-    submodels = [
+    translators = [
         '8,143',
         '8,151',
         '17,143',
@@ -163,32 +263,54 @@ class HyperAutoCompressMobileNetV2(kt.HyperModel):
         '142,151',
     ]
 
-    max_params_road_damage =  2306739 # 3 classes
-    max_params_flowers =  2296509 # 5 classes
-    max_params_caltech_101 =  2309581 # 101 classes
-
-    def __init__(self, name=None, tunable=True, alpha=0.8):
+    def __init__(
+            self, 
+            max_parmeters: int, 
+            num_classes:int, 
+            tau=0.8, 
+            name=None, 
+            tunable=True
+        ):
         super().__init__(name, tunable)
-        self.alpha = alpha
+
+        # Save the max_parameters as a class attribute
+        self.max_parameters = max_parmeters
+        
+        # Save tau as a class attribute
+        self.__tau = tau
+
+        # Set the model architecture type
+        self.__architecture_type = 'mobilenetv2'
+
+        # Save the number of classes for this classification problem
+        self.__num_classes = num_classes
 
     def build(self, hp):
         '''
+        This method will be called for each hyperparameters search trail. 
+        Building a new model with different hyperparameters according to the
+        search space.
         '''
         # Select the back-bone for the model
-        skip_conn = hp.Choice('base_model', self.__class__.submodels)
-        skip_conn = tuple(int(elem) for elem in skip_conn.split(','))
+        translator = hp.Choice('base_model', self.__class__.translators)
+        translator = tuple(
+            int(elem) for elem in translator.split(',')
+        )
 
         # Create the base architecture
         base_model = create_submodel(
-            tf.keras.applications.MobileNetV2(input_shape=(224,224,3), include_top=False), 
-            skip_conn, 
-            'mobilenetv2_skip_from_{}_to_{}')
+            base_model = tf.keras.applications.MobileNetV2(
+                input_shape=(224,224,3), 
+                include_top=False), 
+            connection = translator, 
+            architecture_type = self.__architecture_type
+        )
         
         # Copy the pre-trained weights to the base model
         base_model = copy_pretrained_translator(
-            base_model,
-            'mobilenetv2',
-            skip_conn,
+            base_model = base_model,
+            connection = translator,
+            architecture_type = self.__architecture_type,
         )
 
         # Freeze the base model
@@ -196,27 +318,37 @@ class HyperAutoCompressMobileNetV2(kt.HyperModel):
 
         # Create the new top for the network
         x = base_model.output
-        x = tf.keras.layers.GlobalAveragePooling2D(name='newtop_gap')(x)
-        x = tf.keras.layers.Dense(hp.Int('fc_units', 4, 32, step=8, default=4), name='newtop_fc1')(x)
-        x = tf.keras.layers.Dense(hp.get('n_classes'), name='classifier', activation='softmax')(x)
+        x = tf.keras.layers.GlobalAveragePooling2D(
+            name='newtop_gap')(x)
+        x = tf.keras.layers.Dense(
+            hp.Int('fc_units', 4, 32, step=8, default=4), name='newtop_fc1')(x)
+        x = tf.keras.layers.Dense(
+            self.__num_classes, name='classifier', activation='softmax')(x)
 
-        model = tf.keras.Model(inputs=base_model.inputs, outputs=x, name='autosearch')
+        model = tf.keras.Model(
+            inputs=base_model.inputs, 
+            outputs=x, 
+            name='autosearch'
+        )
 
         # Calculate the rate compression for the proposed metric
         actual_params = model.count_params()
-        if hp.get('n_classes') == 3:
-            params_ratio = actual_params / self.__class__.max_params_road_damage
-        if hp.get('n_classes') == 5:
-            params_ratio = actual_params / self.__class__.max_params_flowers
-        if hp.get('n_classes') == 101:
-            params_ratio = actual_params / self.__class__.max_params_caltech_101
+        params_rate = actual_params / self.max_parameters
+        compression_rate = 1 - params_rate
 
-        compression_ratio = 1 - params_ratio
-        acc_compression = AccuracyCompression('acc_comp', compression_ratio, self.alpha)
-
-        model.compile(optimizer=sKAdam(hp.Float('lr', 1E-5, 1E-2, sampling='log')), 
-                    loss=tf.keras.losses.CategoricalCrossentropy(),
-                    metrics=['accuracy', acc_compression])
+        # Create the custom metric for this model
+        accuracy_compression_metric = AccuracyCompression(
+            name='acc_comp', 
+            compression_rate=compression_rate, 
+            tau=self.__tau
+        )
+        
+        # Compile the model
+        model.compile(
+            optimizer=tf.keras.optimizers.Adam(
+                hp.Float('lr', 1E-5, 1E-2, sampling='log')), 
+            loss=tf.keras.losses.CategoricalCrossentropy(),
+            metrics=['accuracy', accuracy_compression_metric])
 
         return model
     
