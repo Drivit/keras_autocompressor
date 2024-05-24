@@ -32,12 +32,11 @@ class HyperCompressor(kt.HyperModel):
         # Save the number of classes for this classification problem
         self._num_classes = num_classes
 
-
-    def build(self, hp: kt.HyperParameters):
+    def create_backbone(self, hp: kt.HyperParameters) -> tf.keras.Model:
         '''
-        This method will be called for each hyperparameters search trail. 
-        Building a new model with different hyperparameters according to the
-        search space.
+        This method creates a backbone for specific supported architectures.
+        Basically, the method receives the hyperparameters from a tuner and 
+        selects a translator block to generate the pretrained backbone. 
         '''
         # Select the back-bone for the model
         translator = hp.Choice('translator', self._translators)
@@ -46,7 +45,7 @@ class HyperCompressor(kt.HyperModel):
         )
 
         # Create the base architecture
-        base_model = create_submodel(
+        backbone = create_submodel(
             base_model = self._backbone_function(
                 input_shape=self._model_input_shape, 
                 include_top=False), 
@@ -55,31 +54,44 @@ class HyperCompressor(kt.HyperModel):
         )
         
         # Copy the pre-trained weights to the base model
-        base_model = copy_pretrained_translator(
-            base_model = base_model,
+        backbone = copy_pretrained_translator(
+            base_model = backbone,
             connection = translator,
             architecture_type = self._architecture_type,
         )
 
+        return backbone
+
+
+    def build(self, hp: kt.HyperParameters) -> tf.keras.Model:
+        '''
+        This method will be called for each hyperparameters search trail. 
+        Building a new model with different hyperparameters according to the
+        search space.
+        '''
+        # Get the backbone
+        backbone = self.create_backbone(hp)
+
         # Freeze the base model
-        base_model.trainable = False
+        backbone.trainable = False
 
         # Create the new top for the network
-        x = base_model.output
+        x = backbone.output
         x = tf.keras.layers.GlobalAveragePooling2D(
-            name='newtop_gap')(x)
+            name='top_gap')(x)
         x = tf.keras.layers.Dense(
             hp.Int('top_fc1_units', 4, 32, step=8, default=4), name='top_fc1')(x)
         x = tf.keras.layers.Dense(
             self._num_classes, name='classifier', activation='softmax')(x)
 
+        # Create the new model
         model = tf.keras.Model(
-            inputs=base_model.inputs, 
+            inputs=backbone.inputs, 
             outputs=x, 
             name='autosearch'
         )
 
-        # Calculate the rate compression for the proposed metric
+        # Calculate the compression rate for the proposed metric
         actual_params = model.count_params()
         params_rate = actual_params / self._max_parameters
         compression_rate = 1 - params_rate
@@ -100,9 +112,11 @@ class HyperCompressor(kt.HyperModel):
         )
 
         return model
+
+
     
 
-class HyperAutoCompressMobileNet(HyperCompressor):
+class HyperCompressedMobileNet(HyperCompressor):
     '''
     HyperMobilenet implementation.
     '''
@@ -152,7 +166,7 @@ class HyperAutoCompressMobileNet(HyperCompressor):
 
     
 
-class HyperAutoCompressMobileNetV2(HyperCompressor):
+class HyperCompressedMobileNetV2(HyperCompressor):
     '''
     HyperMobilenetV2 implementation.
     '''
@@ -209,7 +223,7 @@ class HyperAutoCompressMobileNetV2(HyperCompressor):
         )
 
 
-class HyperAutoCompressEfficientNetB5(HyperCompressor):
+class HyperCompressedEfficientNetB5(HyperCompressor):
     '''
     HyperEfficientNetB5 implementation.
     '''

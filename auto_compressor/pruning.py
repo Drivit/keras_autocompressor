@@ -12,20 +12,20 @@ def create_submodel(
 
     Args
 
-    base_model
-       base model (as a h5 saved file), or one of the following 
-        options: "keras:vgg16", "keras:mobilenetv1", "keras:mobilenetv2"
+    base_model: `tf.keras.Model`
+       base model loaded in memory.
 
-    connection : tuple
+    connection : `tuple`
         the indexes for the translator connection.
 
-    template_name : str
-        a string with placeholders to include the A and B indices in the name.
+    architecture_type : `str`
+        base architecture type, either 'mobilenet', 'mobilenetv2' or 
+        'efficientnetb5'.
 
 
     Returns
 
-        A `tf.keras.models.Model` loaded in memory.
+        A `tf.keras.Model`
 
 
     References
