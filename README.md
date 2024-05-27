@@ -69,7 +69,7 @@ Once the Hypermodel is created, the pruning-search process should be executed. H
 ### Custom model definition
 Even when our hypermodels have their own definitions, you can modify the structure and keep using the pruning-search process. Assuming that you want to change the hypermodels' top, we encorage you to use our [hypermodels](./src/keras_autocompressor/hypermodels.py) as base classes and override the `build()` method. 
 
-For example, consider chaging the model optimizer as the Stochastic Gradient Descent (SGD) instead of using [Adam](https://arxiv.org/abs/1412.6980),  then your custom hypermodel should be defined as in [this example](./test/Test_Custom_MobileNetV2.ipynb).
+For example, consider chaging the model optimizer as the Stochastic Gradient Descent (SGD) instead of using [Adam](https://arxiv.org/abs/1412.6980),  then your custom hypermodel should be defined as in [this example](./test/Custom_MobileNetV2_Compressor.ipynb).
 
 <!-- ## Citation
 Please include the following citation if you are using our methodology for your works or experimentation.
