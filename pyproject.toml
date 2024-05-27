@@ -2,7 +2,12 @@
 name = "keras-autocompressor"
 version = "0.0.1"
 authors = [
-  { name="David Camacho", email="camacho.castillo.jdavid@gmail.com" },
+  { name="J. D. Camacho", email="camacho.castillo.jdavid@gmail.com" },
+  { name="Carlos Villaseñor", email="carlos.villasenor@academicos.udg.mx" },
+  { name="Javier Gómez Avila", email="jenrique.gomez@academicos.udg.mx" },
+  { name="Carlos Lopez-Franco", email="carlos.lfranco@academicos.udg.mx" },
+  { name="Nancy Arana-Daniel", email="nancy.arana@academicos.udg.mx " },
+
 ]
 description = "Keras auto-compressor toolkit"
 readme = "README.md"
@@ -13,7 +18,6 @@ dependencies = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 
