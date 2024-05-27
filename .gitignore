@@ -168,4 +168,4 @@ cython_debug/
 /.vscode-server
 
 # Log files
-/logs
+**/logs
