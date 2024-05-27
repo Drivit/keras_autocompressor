@@ -1,0 +1,27 @@
+[project]
+name = "keras-autocompressor"
+version = "0.0.1"
+authors = [
+  { name="David Camacho", email="camacho.castillo.jdavid@gmail.com" },
+]
+description = "Keras auto-compressor toolkit"
+readme = "README.md"
+requires-python = ">=3.6"
+dependencies = [
+  "tensorflow>=2.4, <2.16",
+  "keras-tuner>=1.1.0"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/Drivit/keras_autocompressor"
+Issues = "https://github.com/Drivit/keras_autocompressor/issues"
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
