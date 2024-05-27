@@ -1,7 +1,7 @@
-FROM tensorflow/tensorflow:2.4.1-gpu-jupyter
+FROM tensorflow/tensorflow:2.15.0-gpu-jupyter
 
 # Install the keras tuner module
-RUN pip3 install keras-tuner==1.1.0
+RUN pip3 install keras-tuner
 
 # Install tensorflow-datasets module
 RUN pip3 install tensorflow-datasets
