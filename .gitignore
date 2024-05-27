@@ -169,3 +169,5 @@ cython_debug/
 
 # Log files
 **/logs
+
+.gitconfig
