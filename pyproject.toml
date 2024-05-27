@@ -1,6 +1,6 @@
 [project]
 name = "keras-autocompressor"
-version = "0.0.1"
+version = "0.0.3"
 authors = [
   { name="J. D. Camacho", email="camacho.castillo.jdavid@gmail.com" },
   { name="Carlos Villaseñor", email="carlos.villasenor@academicos.udg.mx" },

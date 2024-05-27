@@ -5,12 +5,12 @@ We used a [bioinspired pruning strategy](https://www.mdpi.com/2076-3417/12/10/49
 
 For further technical details, please refer to the paper.
 
-## Installation
+<!-- ## Installation
 Our auto-compressor is available on the Python Package Index ([PyPI](https://pypi.org/)) as `keras-autocompressor`, install this module with the following command.
 ``` shell
 pip install keras-autocompressor
 ```
-To use the `keras-autocompressor` module, the [tensorflow](https://pypi.org/project/tensorflow/) and [keras-tuner](https://pypi.org/project/keras-tuner/) packages are included as dependencies.
+To use the `keras-autocompressor` module, the [tensorflow](https://pypi.org/project/tensorflow/) and [keras-tuner](https://pypi.org/project/keras-tuner/) packages are included as dependencies. -->
 
 ## Dependencies
 This module was designed for [Tensorflow](https://www.tensorflow.org/) and the [keras-tuner](https://keras.io/keras_tuner/) toolkit. We strongly recommend using the following package versions (used in the development phase) to test this module and avoid compatibility issues.
