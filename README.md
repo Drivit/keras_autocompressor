@@ -1,5 +1,5 @@
 # Keras auto-compressor
-This is the official repository for the model auto-compression methodology presented in the paper "Auto-compression Transfer Learning Methodology for Deep Convolutional Neural Networks".
+This is the official repository for the model auto-compression methodology presented in the paper [Auto-compression Transfer Learning Methodology for Deep Convolutional Neural Networks](https://doi.org/10.1016/j.neucom.2025.129661).
 
 We used a [bioinspired pruning strategy](https://www.mdpi.com/2076-3417/12/10/4945) that can delete entire layers or blocks from the network architecture by using pretrained translator layers. This virtually offers a group of sub-architectures with various compression rates, leaving the pruning step as another hyperparameter for tuning.
 
