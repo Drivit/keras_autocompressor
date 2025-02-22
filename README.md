@@ -71,7 +71,18 @@ Even when our hypermodels have their own definitions, you can modify the structu
 
 For example, consider chaging the model optimizer as the Stochastic Gradient Descent (SGD) instead of using [Adam](https://arxiv.org/abs/1412.6980),  then your custom hypermodel should be defined as in [this example](./test/Custom_MobileNetV2_Compressor.ipynb).
 
-<!-- ## Citation
+## Citation
 Please include the following citation if you are using our methodology for your works or experimentation.
 ``` bibtex
-``` -->
+@article{CAMACHO2025129661,
+    title = {Auto-compression transfer learning methodology for deep convolutional neural networks},
+    journal = {Neurocomputing},
+    volume = {630},
+    pages = {129661},
+    year = {2025},
+    issn = {0925-2312},
+    doi = {https://doi.org/10.1016/j.neucom.2025.129661},
+    url = {https://www.sciencedirect.com/science/article/pii/S0925231225003339},
+    author = {J.D. Camacho and Carlos Villaseñor and Javier Gomez-Avila and Carlos Lopez-Franco and Nancy Arana-Daniel},
+}
+```
